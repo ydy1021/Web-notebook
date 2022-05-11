@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.duc.memorandum.dao.FileMapper">
+  
+  <resultMap id="FileMap" type="com.duc.memorandum.entity.FileVO" >
+    <result column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="suffix" property="suffix" jdbcType="VARCHAR" />
+    <result column="old_name" property="oldName" jdbcType="VARCHAR" />
+    <result column="user_id" property="userID" jdbcType="BIGINT" />
+     <result column="url" property="URL" jdbcType="VARCHAR" />
+    <!--附加属性 -->
+   <result column="userType" property="userType" jdbcType="CHAR" />
+  </resultMap>
+  
+    <resultMap id="resultMap" type="com.duc.memorandum.entity.FileVO" >
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="userType" property="userType" jdbcType="CHAR" />
+  </resultMap>
+  
+     <!-- 添加文件 -->
+	 <insert id="addFile"   useGeneratedKeys="true" keyProperty="id">
+	    <![CDATA[
+	    	INSERT INTO 
+	    		tmh_file
+	    	(
+	    		name,
+	    		suffix,
+	            user_id,
+	            url,
+	            type
+	    	)
+	    	VALUES
+	    	(
+	    		#{name, jdbcType = VARCHAR},
+	    		#{suffix, jdbcType = VARCHAR},
+	    		#{userID, jdbcType = BIGINT},
+	    		#{URL, jdbcType = VARCHAR},
+	    		#{type, jdbcType = VARCHAR}
+	    	)
+	    ]]>
+	</insert>
+	
+	<!-- 获取文件列表 -->
+	<select id="getQrByUserID" resultMap="resultMap" parameterType="map">
+	  <![CDATA[
+	    SELECT 
+	      file.name,
+          users.type AS userType,
+          file.url
+	    FROM
+		      tmh_file file
+	    LEFT JOIN
+	          tmh_user users
+	        ON
+          file.user_id=users.user_id
+	     WHERE
+	      file.user_id=#{userID, jdbcType = BIGINT}
+	      AND
+	      file.type=#{type, jdbcType = VARCHAR}
+	    ]]>
+	</select>
+	
+	
+	
+	
+</mapper>

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.duc.memorandum.dao.beiwangluMapper">
+	
+	<!-- 实体类与数据库表之间的映射 -->
+	<resultMap id="DynamicMap" type="com.duc.memorandum.entity.beiwangluVO">
+    <result column="id" property="id" jdbcType="BIGINT" />
+    <result column="user_id" property="userID" jdbcType="BIGINT" />
+    <result column="read_count" property="readCount" jdbcType="BIGINT" />
+    <result column="text" property="text" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="dynamic_type_id" property="dynamicTypeID" jdbcType="BIGINT" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    
+    <!--附加属性 -->
+    <result column="head_img_url" property="headImgURL" jdbcType="VARCHAR" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    
+    
+  </resultMap>
+  
+	
+		
+		
+	<update id="update"  >
+	    <![CDATA[
+	    	UPDATE 
+	    		beiwanglu dynamic
+	    ]]>
+		<set>
+			<if test="text != null">
+				dynamic.text = #{text, jdbcType = VARCHAR},
+			</if>
+				<if test="url != null">
+				dynamic.url = #{url, jdbcType = VARCHAR},
+			</if>
+			<if test="description != null">
+				dynamic.description = #{description, jdbcType = VARCHAR},
+			</if>
+				<if test="dynamicTypeID != null">
+				dynamic.dynamic_type_id = #{dynamicTypeID, jdbcType = VARCHAR},
+			</if>
+		</set>
+	     <![CDATA[
+	    	WHERE
+	    	   dynamic.id = #{id, jdbcType = BIGINT}
+	      ]]>
+	   </update>
+	
+	
+	
+	<insert id="insertForeach" parameterType="java.util.List" useGeneratedKeys="false">
+    	  INSERT INTO 
+	    		beiwanglu
+    			(
+    		    user_id,
+    		    url,
+	    		description,
+	    		dynamic_type_id,
+	    		read_count,
+	    			text
+    			)
+    			values
+    			<foreach collection="list" item="item" index="index" separator=",">
+    		    (
+    			#{item.userID, jdbcType = BIGINT},
+    			   #{item.url, jdbcType = BIGINT},
+	    		#{item.description, jdbcType = VARCHAR},
+	    		#{item.dynamicTypeID, jdbcType = BIGINT},
+    		    #{item.readCount, jdbcType = BIGINT},
+    		       #{item.text, jdbcType = BIGINT}
+    		    )
+            </foreach>		
+    </insert>    
+
+	
+
+	
+	
+	<insert id="add"   useGeneratedKeys="true" keyProperty="id">
+	    <![CDATA[
+	    	INSERT INTO 
+	    		beiwanglu
+	    	(   
+	    	    user_id,
+	    		text,
+	    		url,
+	    		description,
+	    		dynamic_type_id
+	    	)
+	    	VALUES
+	    	(
+	    		#{userID, jdbcType = BIGINT},
+	    		#{text, jdbcType = BIGINT},
+	    	    #{url, jdbcType = VARCHAR},
+	    		#{description, jdbcType = VARCHAR},
+	    		#{dynamicTypeID, jdbcType = BIGINT}
+	    	)
+	    ]]>
+	</insert>
+
+	<select id="getList" resultMap="DynamicMap" parameterType="map">
+		<![CDATA[
+            SELECT 
+			     dynamic.*,
+			     users.user_name,
+			     users.head_img_url
+		    FROM 
+		     beiwanglu dynamic
+	        LEFT JOIN
+	            tmh_user users
+	        ON
+	             dynamic.user_id=users.user_id
+	    WHERE
+	         1=1
+		]]>
+		<if test="userID != null">
+		   AND
+			dynamic.user_id = #{userID, jdbcType = BIGINT}
+		</if>
+			<if test="dynamicTypeID != null">
+		   AND
+			dynamic.dynamic_type_id = #{dynamicTypeID, jdbcType = BIGINT}
+		 </if>
+	    <![CDATA[	
+		  ORDER BY	
+			  dynamic.id
+			  DESC
+		  LIMIT #{startIndex, jdbcType = INTEGER}, #{pageSize, jdbcType = INTEGER}
+		]]>
+	</select>
+
+
+	
+	<select id="getDetail" resultMap="DynamicMap" parameterType="long">
+		<![CDATA[
+          SELECT 
+		     dynamic.*,
+		     users.user_name,
+		     users.head_img_url
+		      FROM 
+		    beiwanglu dynamic
+         LEFT JOIN
+            tmh_user users
+         ON
+             dynamic.user_id=users.user_id
+         WHERE
+          dynamic.id = #{value, jdbcType = BIGINT}
+		]]>
+	</select>
+
+
+	<select id="getCount" resultType="int" parameterType="map">
+		<![CDATA[
+	     SELECT 
+		   COUNT(1)
+	     FROM 
+	       beiwanglu dynamic
+         WHERE
+           1=1
+		]]>
+		<if test="userID != null">
+		   AND
+			dynamic.user_id = #{userID, jdbcType = BIGINT}
+		</if>
+	</select>
+    
+	
+	<delete id="delete" parameterType="long" >
+	    <![CDATA[
+ 	       delete
+ 	       FROM
+	    	  beiwanglu 
+	       WHERE
+	          id= #{value, jdbcType = BIGINT}
+ 	     ]]>
+	</delete>	
+   
+	<update id="updateRedCount" parameterType="long">
+	    <![CDATA[
+ 	       UPDATE
+	    	  beiwanglu 
+	       SET
+	          read_count=1+read_count
+	       WHERE
+	          id= #{value, jdbcType = BIGINT}
+ 	    ]]>
+	</update>	
+</mapper>

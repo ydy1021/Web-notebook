@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.duc.memorandum.dao.UserMapper">
+
+	<!-- 实体类与数据库表之间的映射 -->
+	<resultMap id="UserMap" type="com.duc.memorandum.entity.UserVO">
+		<result column="id" property="id" jdbcType="BIGINT" />
+		<result column="user_id" property="userID" jdbcType="BIGINT" />
+		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+		<result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="VARCHAR" />
+        <result column="head_img_url" property="headImgURL" jdbcType="VARCHAR" />
+        <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+        <result column="phone_number" property="phoneNumber" jdbcType="VARCHAR" />
+         
+         
+	</resultMap>
+	
+	
+	<!-- 添加一个用户基本信息，参数：用户基本信息对象 -->
+	<insert id="addUser"   useGeneratedKeys="true"
+		keyProperty="id">
+	    <![CDATA[
+	    	INSERT INTO 
+	    		tmh_user
+	    	(
+	    		user_id,
+	    		user_name,
+	    		phone_number,
+	    		head_img_url,
+	    		address,
+	    		password
+	    		
+	    	)
+	    	VALUES
+	    	(
+	    		#{userID, jdbcType = BIGINT},
+	    		#{userName, jdbcType = VARCHAR},
+	    		#{phoneNumber, jdbcType = VARCHAR},
+	    		#{headImgURL, jdbcType = VARCHAR},
+	    		#{address, jdbcType = VARCHAR},
+	    		#{password, jdbcType = VARCHAR}
+	    	)
+	    ]]>
+	</insert>
+	
+	 <!-- 检查用户登录是否成功 -->
+	 <select id="getUserVO" resultMap="UserMap" parameterType="map">
+		<![CDATA[
+			SELECT 
+				user.*
+			FROM 
+				tmh_user user
+			WHERE	
+			    is_deleted='0'
+			AND
+				user.phone_number=#{phoneNumber, jdbcType = VARCHAR}
+			AND
+				user.password=#{password, jdbcType = VARCHAR}
+		]]>
+	 </select>
+	 
+
+   	<!-- 获取用户列表-->
+	<select id="getUserList" resultMap="UserMap" parameterType="map">
+		<![CDATA[
+	        SELECT 
+				user.*
+			 FROM 
+				tmh_user user  
+			 WHERE	
+		         user.is_deleted='0'
+		   ]]>
+		   
+			<if test="userType != null">
+		    AND
+				user.type = #{userType, jdbcType = VARCHAR}
+	       </if>
+	   	     <if test="searchString != null">
+		     AND
+			 (
+			  UPPER(user.user_name) LIKE CONCAT('%', UPPER(#{searchString, jdbcType = VARCHAR}), '%') ESCAPE '/'
+			 OR
+			  user.user_id=#{searchString, jdbcType = VARCHAR}
+			 )
+		   </if>
+	
+	     <![CDATA[	
+		 LIMIT #{startIndex, jdbcType = INTEGER}, #{pageSize, jdbcType = INTEGER}
+		]]>
+	  </select>
+	 
+    
+   	<!-- 获取用户列表的数量 -->
+	<select id="getUserListCount" resultType="int" parameterType="map">
+		<![CDATA[
+			SELECT 
+				COUNT(1)
+			FROM 
+				tmh_user user
+			WHERE	
+		        user.is_deleted='0'
+		           AND
+		         user.user_id!='111'
+		]]>
+		<if test="userType != null">
+		    AND
+				user.type = #{userType, jdbcType = VARCHAR}
+	   </if>
+	
+	  </select>
+
+	  
+   
+	 
+	
+  
+
+	<!-- 删除一个用户ID（userID）指定的用户，参数：用户ID（userID） -->
+	<update id="deleteUserByID" parameterType="long">
+	    <![CDATA[
+	    	UPDATE 
+	    		tmh_user user
+	    	SET 
+	    		user.is_deleted = '1'
+	    	WHERE
+	    		user.user_id = #{value, jdbcType = BIGINT}
+	    ]]>
+	</update>
+
+
+	<!-- 修改一个用户基本信息，，参数：用户基本信息对象 -->
+	<update id="updateUserData"  >
+	    <![CDATA[
+	    	UPDATE 
+	    		tmh_user user
+	    ]]>
+		   <set>
+			<if test="nickName != null">
+				user.nick_name = #{nickName, jdbcType = VARCHAR},
+			</if>
+		   <if test="address != null">
+				user.address = #{address, jdbcType = VARCHAR},
+			</if>
+			<if test="userName != null">
+				user.user_name = #{userName, jdbcType = VARCHAR},
+			</if>
+			<if test="qrURL != null">
+				user.qr_url = #{qrURL, jdbcType = VARCHAR},
+			</if>
+			<if test="headImgURL!= null">
+				user.head_img_url = #{headImgURL, jdbcType = VARCHAR},
+			</if>
+			   <if test="work!= null">
+				user.work = #{work, jdbcType = VARCHAR},
+			</if>
+		</set>
+	    <![CDATA[
+	    	WHERE
+	    		user.user_id = #{userID, jdbcType = BIGINT}
+	    ]]>
+	</update>
+
+	
+		<!-- 修改用户的手机号码 -->
+	<update id="updateUserPhone" parameterType="map">
+	    <![CDATA[
+	    	UPDATE 
+	    		tmh_user user
+	        SET
+				user.phone_number = #{phoneNumber, jdbcType = VARCHAR},
+				user.password=#{password, jdbcType = VARCHAR}
+	    	WHERE
+	    		user.user_id = #{userID, jdbcType = BIGINT}
+	    ]]>
+	</update>
+	
+  
+	
+	<!-- 获取用户详情-->
+	<select id="getUserDetail" resultMap="UserMap" parameterType="long">
+		<![CDATA[
+		SELECT 
+			  user.*
+			FROM 
+				tmh_user user
+	        WHERE	
+		    user.user_id = #{value, jdbcType = BIGINT}
+	       AND
+		    user.is_deleted = '0'
+		]]>
+	</select>
+    
+	
+	
+	
+
+   	
+   	
+</mapper>
